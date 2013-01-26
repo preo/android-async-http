@@ -31,11 +31,11 @@ import java.util.HashSet;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
+import ch.boye.httpclientandroidlib.NoHttpResponseException;
+import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
+import ch.boye.httpclientandroidlib.client.HttpRequestRetryHandler;
+import ch.boye.httpclientandroidlib.protocol.ExecutionContext;
+import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import android.os.SystemClock;
 

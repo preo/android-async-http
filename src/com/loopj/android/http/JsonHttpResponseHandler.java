@@ -18,7 +18,7 @@
 
 package com.loopj.android.http;
 
-import org.apache.http.HttpStatus;
+import ch.boye.httpclientandroidlib.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
