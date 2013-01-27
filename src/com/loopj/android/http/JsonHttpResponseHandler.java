@@ -23,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import ch.boye.httpclientandroidlib.Header;
+import ch.boye.httpclientandroidlib.HttpStatus;
 import android.os.Message;
 
 /**
@@ -119,7 +120,14 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
     @Override
     protected void sendSuccessMessage(int statusCode, Header[] headers, String responseBody) {
         try {
-            Object jsonResponse = parseResponse(responseBody);
+            Object jsonResponse = null;
+
+            if(statusCode == HttpStatus.SC_NO_CONTENT) {
+                jsonResponse = null;
+            } else {
+                jsonResponse = parseResponse(responseBody);
+            }
+
             sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, jsonResponse}));
         } catch(JSONException e) {
             sendFailureMessage(e, responseBody);
@@ -144,7 +152,9 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
     }
 
     protected void handleSuccessJsonMessage(int statusCode,Header[] headers, Object jsonResponse) {
-        if(jsonResponse instanceof JSONObject) {
+        if(jsonResponse == null || jsonResponse instanceof String) {
+            onSuccess(statusCode, headers, (String)jsonResponse);
+        } else if(jsonResponse instanceof JSONObject) {
             onSuccess(statusCode, headers, (JSONObject)jsonResponse);
         } else if(jsonResponse instanceof JSONArray) {
             onSuccess(statusCode, headers, (JSONArray)jsonResponse);
