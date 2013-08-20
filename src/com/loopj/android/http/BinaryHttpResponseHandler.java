@@ -102,6 +102,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
      * @param binaryData the response body, if any
      * @deprecated
      */
+    @Deprecated
     public void onFailure(Throwable error, byte[] binaryData) {
         // By default, call the deprecated onFailure(Throwable) for compatibility
         onFailure(error);
@@ -116,6 +117,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
         sendMessage(obtainMessage(SUCCESS_MESSAGE, new Object[]{statusCode, responseBody}));
     }
 
+    @Override
     protected void sendFailureMessage(Throwable e, byte[] responseBody) {
         sendMessage(obtainMessage(FAILURE_MESSAGE, new Object[]{e, responseBody}));
     }
@@ -133,6 +135,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
     }
 
     // Methods which emulate android's Handler and Message methods
+    @Override
     protected void handleMessage(Message msg) {
         Object[] response;
         switch(msg.what) {
@@ -142,7 +145,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
                 break;
             case FAILURE_MESSAGE:
                 response = (Object[])msg.obj;
-                handleFailureMessage((Throwable)response[0], (byte[])response[1]);
+                handleFailureMessage((Throwable)response[0], (byte[]) response[1]);
                 break;
             default:
                 super.handleMessage(msg);
@@ -151,6 +154,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
     }
 
     // Interface to AsyncHttpRequest
+    @Override
     void sendResponseMessage(HttpResponse response) {
         StatusLine status = response.getStatusLine();
         Header[] contentTypeHeaders = response.getHeaders("Content-Type");
@@ -163,7 +167,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
         Header contentTypeHeader = contentTypeHeaders[0];
         boolean foundAllowedContentType = false;
         for(String anAllowedContentType : mAllowedContentTypes) {
-            if(anAllowedContentType.equals(contentTypeHeader.getValue())) {
+            if(Pattern.matches(anAllowedContentType, contentTypeHeader.getValue())) {
                 foundAllowedContentType = true;
             }
         }

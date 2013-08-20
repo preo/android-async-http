@@ -67,22 +67,11 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
      * at the base of the response string. Override to handle in your
      * own code.
      * @param statusCode the status code of the response
+     * @param headers the headers of the HTTP response
      * @param response the parsed json object found in the server response (if any)
      */
-    public void onSuccess(int statusCode, JSONObject response) {
-        onSuccess(response);
-    }
-
-
-    /**
-     * Fired when a request returns successfully and contains a json array
-     * at the base of the response string. Override to handle in your
-     * own code.
-     * @param statusCode the status code of the response
-     * @param response the parsed json array found in the server response (if any)
-     */
-    public void onSuccess(int statusCode, JSONArray response) {
-        onSuccess(response);
+    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+        onSuccess(statusCode, response);
     }
 
     /**
@@ -90,11 +79,10 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
      * at the base of the response string. Override to handle in your
      * own code.
      * @param statusCode the status code of the response
-     * @param headers the headers of the HTTP response
      * @param response the parsed json object found in the server response (if any)
      */
-    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-        onSuccess(statusCode, response);
+    public void onSuccess(int statusCode, JSONObject response) {
+        onSuccess(response);
     }
 
     /**
@@ -109,6 +97,17 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
         onSuccess(statusCode, response);
     }
 
+    /**
+     * Fired when a request returns successfully and contains a json array
+     * at the base of the response string. Override to handle in your
+     * own code.
+     * @param statusCode the status code of the response
+     * @param response the parsed json array found in the server response (if any)
+     */
+    public void onSuccess(int statusCode,  JSONArray response) {
+        onSuccess(response);
+    }
+
     public void onFailure(Throwable e, JSONObject errorResponse) {}
     public void onFailure(Throwable e, JSONArray errorResponse) {}
 
@@ -119,19 +118,17 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
 
     @Override
     protected void sendSuccessMessage(int statusCode, Header[] headers, String responseBody) {
-        try {
-            Object jsonResponse = null;
-
-            if(statusCode == HttpStatus.SC_NO_CONTENT) {
-                jsonResponse = null;
-            } else {
-                jsonResponse = parseResponse(responseBody);
-            }
-
-            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, jsonResponse}));
-        } catch(JSONException e) {
-            sendFailureMessage(e, responseBody);
-        }
+        if (statusCode != HttpStatus.SC_NO_CONTENT){        
+            try {
+                Object jsonResponse = parseResponse(responseBody);
+	            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, jsonResponse}));
+    	    } catch(JSONException e) {
+    	        sendFailureMessage(e, responseBody);
+    	    }
+        } else {
+            // Send null instead of an JSONObject
+            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, null}));
+    	}
     }
 
 

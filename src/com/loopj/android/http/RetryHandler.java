@@ -28,8 +28,9 @@ import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Iterator;
 
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 
 import ch.boye.httpclientandroidlib.NoHttpResponseException;
 import ch.boye.httpclientandroidlib.client.methods.HttpUriRequest;
@@ -55,7 +56,7 @@ class RetryHandler implements HttpRequestRetryHandler {
         // never retry timeouts
         exceptionBlacklist.add(InterruptedIOException.class);
         // never retry SSL handshake failures
-        exceptionBlacklist.add(SSLHandshakeException.class);
+        exceptionBlacklist.add(SSLException.class);
     }
 
     private final int maxRetries;
@@ -64,6 +65,7 @@ class RetryHandler implements HttpRequestRetryHandler {
         this.maxRetries = maxRetries;
     }
 
+    @Override
     public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
         boolean retry = true;
 
@@ -73,10 +75,10 @@ class RetryHandler implements HttpRequestRetryHandler {
         if(executionCount > maxRetries) {
             // Do not retry if over max retry count
             retry = false;
-        } else if (exceptionBlacklist.contains(exception.getClass())) {
+        } else if (isInList(exceptionBlacklist, exception)) {
             // immediately cancel retry if the error is blacklisted
             retry = false;
-        } else if (exceptionWhitelist.contains(exception.getClass())) {
+        } else if (isInList(exceptionWhitelist, exception)) {
             // immediately retry if error is whitelisted
             retry = true;
         } else if (!sent) {
@@ -98,5 +100,15 @@ class RetryHandler implements HttpRequestRetryHandler {
         }
 
         return retry;
+    }
+    
+    protected boolean isInList(HashSet<Class<?>> list, Throwable error) {
+    	Iterator<Class<?>> itr = list.iterator();
+    	while (itr.hasNext()) {
+    		if (itr.next().isInstance(error)) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 }
