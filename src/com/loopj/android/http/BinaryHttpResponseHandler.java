@@ -18,6 +18,9 @@
 
 package com.loopj.android.http;
 
+import java.io.IOException;
+import java.util.regex.Pattern;
+
 import android.os.Message;
 import ch.boye.httpclientandroidlib.Header;
 import ch.boye.httpclientandroidlib.HttpEntity;
@@ -27,12 +30,10 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.entity.BufferedHttpEntity;
 import ch.boye.httpclientandroidlib.util.EntityUtils;
 
-import java.io.IOException;
-
 /**
  * Used to intercept and handle the responses from requests made using
- * {@link AsyncHttpClient}. Receives response body as byte array with a 
- * content-type whitelist. (e.g. checks Content-Type against allowed list, 
+ * {@link AsyncHttpClient}. Receives response body as byte array with a
+ * content-type whitelist. (e.g. checks Content-Type against allowed list,
  * Content-length).
  * <p>
  * For example:

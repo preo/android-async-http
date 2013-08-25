@@ -22,9 +22,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import android.os.Message;
 import ch.boye.httpclientandroidlib.Header;
 import ch.boye.httpclientandroidlib.HttpStatus;
-import android.os.Message;
 
 /**
  * Used to intercept and handle the responses from requests made using
@@ -118,7 +119,7 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
 
     @Override
     protected void sendSuccessMessage(int statusCode, Header[] headers, String responseBody) {
-        if (statusCode != HttpStatus.SC_NO_CONTENT){        
+        if (statusCode != HttpStatus.SC_NO_CONTENT){
             try {
                 Object jsonResponse = parseResponse(responseBody);
 	            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, jsonResponse}));
@@ -126,8 +127,7 @@ public class JsonHttpResponseHandler extends AsyncHttpResponseHandler {
     	        sendFailureMessage(e, responseBody);
     	    }
         } else {
-            // Send null instead of an JSONObject
-            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, null}));
+            sendMessage(obtainMessage(SUCCESS_JSON_MESSAGE, new Object[]{statusCode, headers, new JSONObject()}));
     	}
     }
 
