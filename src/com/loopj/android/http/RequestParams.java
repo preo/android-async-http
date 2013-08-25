@@ -143,6 +143,22 @@ public class RequestParams {
     }
 
     /**
+     * Adds value to param which can have more than one value.
+     * @param key the key name for the param, either existing or new.
+     * @param value the value string for the new param.
+     */
+    public void add(String key, String value) {
+        if(key != null && value != null) {
+            ArrayList<String> paramArray = urlParamsWithArray.get(key);
+            if (paramArray == null) {
+                paramArray = new ArrayList<String>();
+                this.put(key, paramArray);
+            }
+            paramArray.add(value);
+        }
+    }
+
+    /**
      * Adds an input stream to the request.
      * @param key the key name for the new param.
      * @param stream the input stream to add.
@@ -210,12 +226,12 @@ public class RequestParams {
                 result.append("&");
 
             ArrayList<String> values = entry.getValue();
-            for (String value : values) {
-                if (values.indexOf(value) != 0)
+            for (int i = 0; i < values.size(); i++) {
+                if (i != 0)
                     result.append("&");
                 result.append(entry.getKey());
                 result.append("=");
-                result.append(value);
+                result.append(values.get(i));
             }
         }
 
@@ -236,6 +252,14 @@ public class RequestParams {
                 multipartEntity.addPart(entry.getKey(), entry.getValue());
             }
 
+            // Add dupe params
+            for(ConcurrentHashMap.Entry<String, ArrayList<String>> entry : urlParamsWithArray.entrySet()) {
+                ArrayList<String> values = entry.getValue();
+                for (String value : values) {
+                    multipartEntity.addPart(entry.getKey(), value);
+                }
+            }
+
             // Add file params
             int currentIndex = 0;
             int lastIndex = fileParams.entrySet().size() - 1;
@@ -250,14 +274,6 @@ public class RequestParams {
                     }
                 }
                 currentIndex++;
-            }
-
-            // Add dupe params
-            for(ConcurrentHashMap.Entry<String, ArrayList<String>> entry : urlParamsWithArray.entrySet()) {
-                ArrayList<String> values = entry.getValue();
-                for (String value : values) {
-                    multipartEntity.addPart(entry.getKey(), value);
-                }
             }
 
             entity = multipartEntity;
