@@ -81,6 +81,7 @@ public class AsyncHttpResponseHandler {
         // Set up a handler to post events back to the correct thread if possible
         if(Looper.myLooper() != null) {
             handler = new Handler(){
+                @Override
                 public void handleMessage(Message msg){
                     AsyncHttpResponseHandler.this.handleMessage(msg);
                 }
@@ -112,15 +113,6 @@ public class AsyncHttpResponseHandler {
     /**
      * Fired when a request returns successfully, override to handle in your own code
      * @param statusCode the status code of the response
-     * @param content the body of the HTTP response from the server
-     */
-    public void onSuccess(int statusCode, String content) {
-        onSuccess(content);
-    }
-
-    /**
-     * Fired when a request returns successfully, override to handle in your own code
-     * @param statusCode the status code of the response
      * @param headers the headers of the HTTP response
      * @param content the body of the HTTP response from the server
      */
@@ -129,10 +121,21 @@ public class AsyncHttpResponseHandler {
     }
 
     /**
+     * Fired when a request returns successfully, override to handle in your own code
+     * @param statusCode the status code of the response
+     * @param content the body of the HTTP response from the server
+     */
+    public void onSuccess(int statusCode, String content)
+    {
+        onSuccess(content);
+    }
+
+    /**
      * Fired when a request fails to complete, override to handle in your own code
      * @param error the underlying cause of the failure
      * @deprecated use {@link #onFailure(Throwable, String)}
      */
+    @Deprecated
     public void onFailure(Throwable error) {}
 
     /**
@@ -151,7 +154,7 @@ public class AsyncHttpResponseHandler {
     //
 
     protected void sendSuccessMessage(int statusCode, Header[] headers, String responseBody) {
-        sendMessage(obtainMessage(SUCCESS_MESSAGE, new Object[]{Integer.valueOf(statusCode), headers, responseBody}));
+        sendMessage(obtainMessage(SUCCESS_MESSAGE, new Object[]{new Integer(statusCode), headers, responseBody}));
     }
 
     protected void sendFailureMessage(Throwable e, String responseBody) {
@@ -220,7 +223,7 @@ public class AsyncHttpResponseHandler {
         if(handler != null){
             msg = this.handler.obtainMessage(responseMessage, response);
         }else{
-            msg = new Message();
+            msg = Message.obtain();
             msg.what = responseMessage;
             msg.obj = response;
         }
@@ -245,7 +248,7 @@ public class AsyncHttpResponseHandler {
         if(status.getStatusCode() >= 300) {
             sendFailureMessage(new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), responseBody);
         } else {
-            sendSuccessMessage(status.getStatusCode(),response.getAllHeaders(), responseBody);
+            sendSuccessMessage(status.getStatusCode(), response.getAllHeaders(), responseBody);
         }
     }
 }
